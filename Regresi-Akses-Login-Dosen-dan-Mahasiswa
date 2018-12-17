@@ -1,0 +1,84 @@
+#Regresi Akses Login Dosen dan Mahasiswa 2018
+
+import matplotlib.pyplot as plt
+from matplotlib import style
+import pyodbc
+style.use("ggplot")
+
+
+koneksi = pyodbc.connect('Driver={SQL Server};Server=DESKTOP-875UTG0;Database=MDIDATA;Trusted_Connection=yes;')
+def dosen (koneksi):
+    eksekusi = koneksi.cursor()
+    eksekusi.execute("select COUNT(MONTH(tanggal)) as jumlah_login_dosen from Dosen where year(tanggal)=2018 group by Month(tanggal) order by MONTH(tanggal) asc")
+    output = eksekusi.fetchall()
+    jmldosenlogin = []
+    for row in output:
+        jmldosenlogin.append(row[0])
+    return  jmldosenlogin
+
+def mahasiswa (koneksi):
+    eksekusi = koneksi.cursor()
+    eksekusi.execute("select COUNT(MONTH(tanggal)) as jumlah_login_mahasiswa from MHS where year(tanggal)=2018 group by Month(tanggal) order by MONTH(tanggal) asc")
+    output = eksekusi.fetchall()
+    jmlmhslogin = []
+    for row in output:
+        jmlmhslogin.append(row[0])
+    return jmlmhslogin
+print(dosen(koneksi))
+
+
+loginmahasiswa = mahasiswa(koneksi)
+logindosen = dosen(koneksi)
+def linearRegresion(data):
+	'''
+		indeks[0] -> response variable -> x
+		indeks[1] -> predictor variable -> y
+	'''
+	x2=[]
+	y2=[]
+	xy=[]
+	n = len(data[0])
+
+	for x in data[0]:
+		x2.append(x**2)
+
+	for y in data[0]:
+		y2.append(y**2)
+
+	i=0;
+	while(i<n):
+		dump = data[0][i]*data[1][i]
+		xy.append(dump)
+		i+=1
+	jmlhx = sum(data[0])
+	jmlhy = sum(data[1])
+	jmlhx2 = sum(x2)
+	jmlhy2 = sum(y2)
+	jmlhxy = sum(xy)
+
+	a = ((jmlhy*jmlhx2)-(jmlhx*jmlhxy))/(n*jmlhx2-(jmlhx**2))
+	b = ((n*jmlhxy)-(jmlhx*jmlhy))/(n*jmlhx2-(jmlhx**2))
+
+	return(a,b)
+
+def gambarGrafik(dataProses):
+	a,b = linearRegresion(dataProses)
+	print("Nilai a adalah %.4f"%(a))
+	print("Nilai b adalah %.4f"%(b))
+	def f1(keanggotaan,a,b):
+		hit = []
+		for x in keanggotaan:
+			y = b*x+a
+			hit.append(y)
+		return(hit)
+	plt.scatter(dataProses[0],dataProses[1],label='data aktual',s=50)
+	plt.plot(dataProses[0],f1(dataProses[0],a,b),c='k',label='hasil regresi',linewidth=1)
+	plt.title("Hasil regresi Akses ShareITS Tahun 2018")
+	plt.ylabel("Akses Oleh Mahasiswa")
+	plt.xlabel("Akses Oleh Dosen")
+	plt.legend()
+	fig = plt.figure(1)
+
+	plt.show()
+
+gambarGrafik([logindosen,loginmahasiswa])
