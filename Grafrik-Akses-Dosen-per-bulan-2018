@@ -1,0 +1,24 @@
+import matplotlib.pyplot as plt
+import pyodbc
+import pandas as pd
+
+#Grafrik Akses Dosen per bulan 2018
+
+koneksi = pyodbc.connect('Driver={SQL Server};Server=DESKTOP-875UTG0;Database=MDIDATA;Trusted_Connection=yes;')
+eksekusi = koneksi.cursor()
+eksekusi.execute("select MONTH(tanggal)as bulan ,COUNT(MONTH(tanggal)) as jumlah_login_dsn from Dosen where year(tanggal)=2018 group by Month(tanggal) order by MONTH(tanggal) asc")
+row= eksekusi.fetchall()
+data = pd.DataFrame([a for a in i] for i in row)
+data.rename (columns={0:'bulan', 1:'jumlah_login'}, inplace=True)
+print(data)
+
+x = ['Januari','Febuari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November']
+y = data['jumlah_login']
+#plt.scatter(x,y)
+for i, v in enumerate(y):
+        plt.text(v + 1, i + .10, str(v), color='blue', va='center')
+plt.title('Jumlah akses shareits oleh Dosen Per bulan di tahun 2018')
+plt.ylabel('Bulan Akses')
+plt.xlabel('Jumlah Akses')
+plt.barh(x,y)
+plt.show()
