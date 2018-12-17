@@ -1,0 +1,53 @@
+import matplotlib.pyplot as plt
+import pyodbc
+import pandas as pd
+
+#Grafrik Akses shareITS berdasarkan 3tahun terakhir
+
+koneksi = pyodbc.connect('Driver={SQL Server};Server=DESKTOP-875UTG0;Database=MDIDATA;Trusted_Connection=yes;')
+def data2018 (koneksi):
+    data = koneksi.cursor()
+    data.execute("select MONTH(tanggal)as bulan ,COUNT(MONTH(tanggal)) as jumlah_login_all from AllUser where year(tanggal)=2018 group by Month(tanggal) order by MONTH(tanggal) asc")
+    output = data.fetchall()
+    databulanan18 = []
+    for row in output:
+        databulanan18.append(row[1])
+    return  databulanan18
+
+def data2017 (koneksi):
+    data = koneksi.cursor()
+    data.execute("select MONTH(tanggal)as bulan ,COUNT(MONTH(tanggal)) as jumlah_login_all from AllUser where year(tanggal)=2017 group by Month(tanggal) order by MONTH(tanggal) asc")
+    output = data.fetchall()
+    databulanan17 = []
+    for row in output:
+        databulanan17.append(row[1])
+    return  databulanan17
+
+def data2016 (koneksi):
+    data = koneksi.cursor()
+    data.execute("select MONTH(tanggal)as bulan ,COUNT(MONTH(tanggal)) as jumlah_login_all from AllUser where year(tanggal)=2016 group by Month(tanggal) order by MONTH(tanggal) asc")
+    output = data.fetchall()
+    databulanan16 = []
+    for row in output:
+        databulanan16.append(row[1])
+    return  databulanan16
+
+
+print(data2016(koneksi),data2017(koneksi),data2018(koneksi))
+
+sumbux = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+databulanan16 = data2016(koneksi)
+databulanan17 = data2017(koneksi)
+databulanan18 = data2018(koneksi)
+
+plt.plot(sumbux, databulanan16)
+plt.plot(sumbux, databulanan17)
+plt.plot(sumbux, databulanan18)
+plt.title("Jumlah akses shareits secara kesuluruhan pada 2016-2018")
+plt.legend(['2016', '2017', '2018'], loc='upper left')
+plt.title('Jumlah akses shareits tiga tahun terakhir')
+plt.ylabel('Jumlah Akses')
+plt.xlabel('Bulan Akses')
+
+plt.show()
+
